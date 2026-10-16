@@ -3,7 +3,7 @@ const source=fs.readFileSync('dist/app.js','utf8');
 const order=['F','R','B','L','U','D'];
 let stops=0,renders=0,starts=0;
 const element={scrollIntoView(){}};
-const context=vm.createContext({scanFace:'F',paint:'F',scanned:Object.fromEntries(order.map(f=>[f,null])),scanError:'',scanSamples:{},scanReferences:{},CubeColorReader:require('../dist/color-recognition.js'),NAMES:require('../dist/cube-colors.js').NAMES,startCapturedLesson(){starts++;stops++;return true;},render(){renders++;},stopMedia(){stops++;},toast(){},$:()=>element,document:{querySelector:()=>element}});
+const context=vm.createContext({stream:null,scanFace:'F',paint:'F',scanned:Object.fromEntries(order.map(f=>[f,null])),scanError:'',scanSamples:{},scanReferences:{},CubeColorReader:require('../dist/color-recognition.js'),NAMES:require('../dist/cube-colors.js').NAMES,startCapturedLesson(){starts++;stops++;return true;},render(){renders++;},stopMedia(){stops++;},toast(){},$:()=>element,document:{querySelector:()=>element}});
 vm.runInContext(source.slice(source.indexOf('function classify('),source.indexOf('function bindPractice(')),context);
 const pixels={F:[105,149,128],R:[238,153,81],B:[98,140,171],L:[217,99,78],U:[239,198,80],D:[248,245,231]};
 function capture(face,logo){const canvas={width:300,height:300,getContext:()=>({getImageData:(x,y)=>({data:[...((x>125&&x<170&&y>125&&y<170)?logo:pixels[face]),255]})})};context.readColors(canvas,270);}
