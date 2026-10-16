@@ -3,9 +3,9 @@ const source=fs.readFileSync('dist/app.js','utf8');
 const order=['F','R','B','L','U','D'];
 let stops=0,renders=0;
 const element={scrollIntoView(){}};
-const context=vm.createContext({scanFace:'F',paint:'F',scanned:Object.fromEntries(order.map(f=>[f,null])),scanError:'',NAMES:{F:'초록',R:'빨강',B:'파랑',L:'주황',U:'노랑',D:'흰색'},render(){renders++;},stopMedia(){stops++;},toast(){},$:()=>element,document:{querySelector:()=>element}});
+const context=vm.createContext({scanFace:'F',paint:'F',scanned:Object.fromEntries(order.map(f=>[f,null])),scanError:'',NAMES:require('../dist/cube-colors.js').NAMES,render(){renders++;},stopMedia(){stops++;},toast(){},$:()=>element,document:{querySelector:()=>element}});
 vm.runInContext(source.slice(source.indexOf('function classify('),source.indexOf('function bindPractice(')),context);
-const pixels={F:[105,149,128],R:[217,99,78],B:[98,140,171],L:[238,153,81],U:[239,198,80],D:[248,245,231]};
+const pixels={F:[105,149,128],R:[238,153,81],B:[98,140,171],L:[217,99,78],U:[239,198,80],D:[248,245,231]};
 function capture(face){const canvas={width:300,height:300,getContext:()=>({getImageData:()=>({data:[...pixels[face],255]})})};context.readColors(canvas,270);}
 // A different face must not be silently saved under the expected center color.
 capture('R');assert.equal(context.scanFace,'F');assert.equal(context.scanned.F,null);assert.ok(context.scanError);assert.equal(stops,0);
