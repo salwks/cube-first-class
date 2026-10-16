@@ -3,7 +3,7 @@ const palette=require('../dist/cube-colors.js'),source=fs.readFileSync('dist/app
 let routed=[],saved=0,focused=0;
 const message={scrollIntoView(){},focus(){focused++;}};
 const ctx=vm.createContext({...palette,Cube,scanFace:'D',selectedScanCell:null,scanError:'',lessonOrigin:'sample',stopMedia(){},saveScanDraft(){saved++;},render(){},toast(){},$:()=>message,analyze:str=>routed.push(str)});
-vm.runInContext(source.slice(source.indexOf('function valid('),source.indexOf('function startSample(')),ctx);
+vm.runInContext(source.slice(source.indexOf('function valid('),source.indexOf('function analyze(')),ctx);
 vm.runInContext(source.slice(source.indexOf('function startCapturedLesson('),source.indexOf('function bindScan(')),ctx);
 const input=new Cube().move("R U R' U' F2 L D R2 B U2").asString();
 const load=str=>ctx.scanned=Object.fromEntries(palette.FACES.map((face,i)=>[face,[...str.slice(i*9,i*9+9)]]));

@@ -32,6 +32,7 @@ jobs:
         run: |
           node --check dist/app.js
           node --check dist/lesson-flow.js
+          node --check dist/teaching.js
           node --check dist/scan-guide.js
           node tests/scan-guide.cjs
           node tests/scan-capture.cjs
@@ -40,6 +41,7 @@ jobs:
           node tests/scan-validation.cjs
           node tests/lesson-flow.cjs
           node tests/hands-on-flow.cjs
+          node tests/teaching.cjs
           node tests/webgl-geometry.cjs
           node tests/color-recognition.cjs
           node tests/camera-session.cjs

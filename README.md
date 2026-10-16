@@ -1,47 +1,41 @@
 # 3×3 큐브 1타강사
 
-초보자가 큐브의 원리를 이해하며 직접 맞추도록 돕는 웹 수업입니다.
+촬영한 본인 큐브를 초보자 순서로 맞추면서, 매 동작의 이유와 결과를 배우는 웹 서비스입니다. 준비된 예제나 임의의 섞기 배치는 제공하지 않습니다.
 
-- 꽃 만들기 → 흰 십자 → 1층 → 2층 → 노란 십자 → 노란 면 → 마지막 자리 맞추기
-- 예제 큐브와 촬영한 내 큐브의 학습 상태를 각각 보관
-- 단계별 3D 시범과 직접 연습, 큐브 화면의 설명 툴팁
-- 6면 촬영을 위한 중심색 기준 3D 회전 안내
-- 촬영한 54칸을 같은 3D 큐브에 표시하고, 큐브의 칸을 눌러 직접 색 수정
-- Three.js로 렌더링한 큐브를 드래그해서 둘러보고, 실제 9개 조각의 층 회전을 시범·연습
-- 조명 보정과 여러 지점의 색 측정, 중심 로고를 피한 색상 보정
+설계 기준은 [PRD](docs/PRD.md), 작업 지시는 [구현 프롬프트](docs/IMPLEMENTATION_PROMPT.md), 조사와 검증 근거는 [기록](docs/RESEARCH_AND_VALIDATION.md)에 있습니다.
 
-촬영 상태와 수업 진도는 새로고침 후에도 유지됩니다. 상단의 **전체 초기화**를 누르면 이 서비스의 촬영·수업 기록을 지우고 처음부터 시작합니다.
+## 수업
 
-사진의 색상 인식과 큐브 처리는 브라우저 안에서 진행합니다. 사진을 서버로 업로드하지 않습니다. 카메라 사용에는 HTTPS와 브라우저의 카메라 권한이 필요합니다.
+흰 꽃 → 옆 색까지 맞춘 흰 십자 → 첫 층 코너 → 가운데 층 → 노란 십자 → 노란 면 → 마지막 코너 자리 → 마지막 변 자리 순서입니다. 이미 맞춘 실제 목표는 배치를 흐트러뜨리지 않고 건너뜁니다.
 
-기준 자세는 위 노랑 · 아래 흰색 · 앞 초록 · 오른쪽 주황 · 뒤 파랑 · 왼쪽 빨강입니다. 색상 정의는 `dist/cube-colors.js`를 촬영, 3D 표시, 수업에서 함께 사용합니다.
+기본 화면은 내 큐브의 현재 목표, 다음 회전의 색과 방향, 이유, 돌린 뒤 확인할 모습과 이전·다음 버튼으로 구성됩니다. 사용자가 실물에 안내한 동작을 적용한 뒤 다음을 누르면 화면이 같은 회전을 적용합니다. 화면은 확인한 동작을 적용한 예상 상태이며 실제 손의 회전을 자동 추적하지 않습니다.
 
-## 실행
+시범은 현재 조각의 시작 배치에서 재생한 뒤 원래 진도로 돌아옵니다. 가상 연습도 내 촬영 배치의 복사본만 사용하고, 실물 진도를 저장하는 키에 기록하지 않습니다.
 
-`dist/`에 3D 렌더러 빌드가 포함되어 있어 정적 웹 서버로 바로 제공할 수 있습니다. `src/`의 렌더러를 수정했다면 먼저 빌드합니다.
+여섯 면 촬영은 같은 카메라를 유지하며 다음 면으로 안내합니다. 중심 로고는 기준색으로 처리하고, 나머지 칸은 측정값으로 읽습니다. 잘못 읽힌 색은 같은 3D 큐브의 칸을 눌러 고칠 수 있습니다. 사진은 서버로 전송하지 않습니다.
+
+위 노랑 · 아래 흰색 · 앞 초록 · 오른쪽 주황 · 뒤 파랑 · 왼쪽 빨강의 표준 배색을 사용합니다. 정의는 `dist/cube-colors.js`에서 공유합니다. 회전 방향은 돌릴 색의 중심면을 정면에서 볼 때 기준입니다.
+
+## 개발과 검증
 
 ```sh
 npm ci
 npm run build
-```
-
-```sh
 python -m http.server 4173 --directory dist
 ```
 
-## 배포
-
-`main` 브랜치에 push하면 GitHub Actions가 `dist/`를 GitHub Pages로 배포합니다.
-
-## 검증
+계획과 설명은 `dist/planner.js`, `dist/teaching.js`, 학습 상태와 이력은 `dist/lesson-flow.js`, 실제 3D 렌더러는 `src/cube3d.js`에서 관리합니다.
 
 ```sh
-node tests/scan-guide.cjs
 node tests/lesson-flow.cjs
+node tests/teaching.cjs
+node tests/hands-on-flow.cjs
+node tests/scan-layout.cjs
+node tests/webgl-geometry.cjs
 ```
 
-## 사용한 라이브러리
+전체 회귀 검사는 `.github/workflows/pages.yml`에 있습니다. `main`에 push하면 검사와 빌드 후 GitHub Pages로 배포합니다. 자동 검사는 실제 초보자의 교육 효과 평가와 별개입니다.
 
-큐브 상태 모델은 [cube.js](https://github.com/ldez/cubejs)를 사용합니다. MIT 라이선스 전문은 `dist/vendor/LICENSE`에 있습니다.
+## 라이선스
 
-3D 렌더러는 [Three.js](https://threejs.org/)를 사용합니다. MIT 라이선스 전문은 `dist/vendor/THREE-LICENSE`에 있습니다.
+[cube.js](https://github.com/ldez/cubejs)와 [Three.js](https://threejs.org/)는 MIT 라이선스를 사용합니다. 전문은 `dist/vendor/LICENSE`와 `dist/vendor/THREE-LICENSE`에 있습니다.

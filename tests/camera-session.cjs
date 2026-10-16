@@ -5,7 +5,7 @@ const source=fs.readFileSync('dist/app.js','utf8');
  const ctx=vm.createContext({...palette,Cube,stream:null,route:'scan',scanError:'',scanFace:'D',selectedScanCell:null,scanned:Object.fromEntries(palette.FACES.map(f=>[f,Array(9).fill('F')])),navigator:{mediaDevices:{getUserMedia:async()=>{requests++;return camera;}}},$:s=>s==='#open-camera'?button:s==='#camera'?video:{scrollIntoView(){},focus(){}},render(){if(ctx.stream)video.srcObject=ctx.stream;},toast(){},saveScanDraft(){},analyze(){throw Error('invalid scan must not navigate');},stopMedia(){ctx.stream?.getTracks().forEach(t=>t.stop());ctx.stream=null;}});
  vm.runInContext(source.slice(source.indexOf("const open=$('#open-camera')"),source.indexOf("$('#capture').onclick")),ctx);
  await button.onclick();await button.onclick();assert.equal(requests,1);assert.equal(stops,0);assert.equal(ctx.stream,camera);assert.equal(video.srcObject,camera);assert.ok(plays>=1);
- vm.runInContext(source.slice(source.indexOf('function valid('),source.indexOf('function startSample(')),ctx);
+ vm.runInContext(source.slice(source.indexOf('function valid('),source.indexOf('function analyze(')),ctx);
  vm.runInContext(source.slice(source.indexOf('function startCapturedLesson('),source.indexOf('function bindScan(')),ctx);
  assert.equal(ctx.startCapturedLesson(),false);assert.equal(ctx.stream,camera);assert.equal(stops,0,'color correction must not stop the camera');
  ctx.heading=()=>'';ctx.ScanGuide={html:()=>'<div>3D cube</div>'};ctx.selectedScanCell=null;
