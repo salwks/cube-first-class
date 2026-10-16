@@ -29,6 +29,7 @@ jobs:
           node --check dist/scan-guide.js
           node tests/scan-guide.cjs
           node tests/scan-capture.cjs
+          node tests/scan-workspace.cjs
           node tests/lesson-flow.cjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
