@@ -7,6 +7,8 @@
 - 단계별 3D 시범과 직접 연습, 큐브 화면의 설명 툴팁
 - 6면 촬영을 위한 중심색 기준 3D 회전 안내
 - 촬영한 54칸을 같은 3D 큐브에 표시하고, 큐브의 칸을 눌러 직접 색 수정
+- Three.js로 렌더링한 큐브를 드래그해서 둘러보고, 실제 9개 조각의 층 회전을 시범·연습
+- 조명 보정과 여러 지점의 색 측정, 중심 로고를 피한 색상 보정
 
 촬영 상태와 수업 진도는 새로고침 후에도 유지됩니다. 상단의 **전체 초기화**를 누르면 이 서비스의 촬영·수업 기록을 지우고 처음부터 시작합니다.
 
@@ -16,7 +18,12 @@
 
 ## 실행
 
-별도 빌드 없이 `dist/`를 정적 웹 서버로 제공하면 됩니다.
+`dist/`에 3D 렌더러 빌드가 포함되어 있어 정적 웹 서버로 바로 제공할 수 있습니다. `src/`의 렌더러를 수정했다면 먼저 빌드합니다.
+
+```sh
+npm ci
+npm run build
+```
 
 ```sh
 python -m http.server 4173 --directory dist
@@ -36,3 +43,5 @@ node tests/lesson-flow.cjs
 ## 사용한 라이브러리
 
 큐브 상태 모델은 [cube.js](https://github.com/ldez/cubejs)를 사용합니다. MIT 라이선스 전문은 `dist/vendor/LICENSE`에 있습니다.
+
+3D 렌더러는 [Three.js](https://threejs.org/)를 사용합니다. MIT 라이선스 전문은 `dist/vendor/THREE-LICENSE`에 있습니다.

@@ -1,0 +1,7 @@
+{
+  "name": "cube-first-class",
+  "private": true,
+  "scripts": {"build": "esbuild src/cube3d.js --bundle --minify --format=iife --target=es2020 --outfile=dist/cube3d.js"},
+  "dependencies": {"three": "0.186.1"},
+  "devDependencies": {"esbuild": "0.28.2"}
+}

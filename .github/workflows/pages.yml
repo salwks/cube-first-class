@@ -22,6 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
       - name: Check JavaScript and camera orientation
         run: |
           node --check dist/app.js
@@ -30,7 +36,11 @@ jobs:
           node tests/scan-guide.cjs
           node tests/scan-capture.cjs
           node tests/scan-workspace.cjs
+          node tests/scan-validation.cjs
           node tests/lesson-flow.cjs
+          node tests/webgl-geometry.cjs
+          node tests/color-recognition.cjs
+          node tests/camera-session.cjs
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
