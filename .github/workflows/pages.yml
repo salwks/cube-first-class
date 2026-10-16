@@ -35,6 +35,7 @@ jobs:
           node --check dist/scan-guide.js
           node tests/scan-guide.cjs
           node tests/scan-capture.cjs
+          node tests/scan-layout.cjs
           node tests/scan-workspace.cjs
           node tests/scan-validation.cjs
           node tests/lesson-flow.cjs

@@ -1,0 +1,11 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');const source=fs.readFileSync('dist/app.js','utf8');
+const retainedVideo={id:'camera'},focusCalls=[],scrollCalls=[];let currentVideo=retainedVideo,boundVideo,mounts=0,saves=0;
+const placeholder={replaceWith(v){currentVideo=v;}};
+const app={set innerHTML(v){currentVideo=placeholder;}};
+const context=vm.createContext({busy:false,stream:{active:true},route:'scan',window:{scrollY:137,scrollX:0,scrollTo:o=>scrollCalls.push(o)},document:{activeElement:{id:'capture'}},$:s=>s==='#app'?app:s==='#camera'?currentVideo:s==='#capture'?{focus:o=>focusCalls.push(o)}:null,saveScanDraft(){saves++;},home(){},scanPage:()=>'<scan>',learnPage(){},practicePage(){},bind(){boundVideo=currentVideo;},Cube3D:{mountAll(){mounts++;}}});
+vm.runInContext(source.slice(source.indexOf('function render(){'),source.indexOf('\n',source.indexOf('function render(){')))+';render();render();',context);
+assert.equal(currentVideo,retainedVideo);assert.equal(boundVideo,retainedVideo,'reuse the existing video rather than restart its element');assert.equal(saves,2);assert.equal(mounts,2);assert.ok(scrollCalls.every(o=>o.top===137&&o.behavior==='instant'));assert.ok(focusCalls.every(o=>o.preventScroll));
+let measured;const cameraButton={},video={videoWidth:1280,videoHeight:960};const captureContext=vm.createContext({stream:{active:true},$:s=>s==='#capture'?cameraButton:s==='#camera'?video:s==='.scan-window'?{getBoundingClientRect:()=>({width:320,height:180})}:s==='.scan-target'?{getBoundingClientRect:()=>({width:120})}:null,document:{createElement:()=>({getContext:()=>({drawImage(){}})})},readColors:(c,size)=>measured=size,toast(){}});
+vm.runInContext(source.slice(source.indexOf("$('#capture').onclick"),source.indexOf("$('#photo').onchange")),captureContext);cameraButton.onclick();assert.equal(measured,480,'sample the actual responsive camera target');
+assert.ok(!source.slice(source.indexOf('function readColors('),source.indexOf('function bindPractice(')).includes('scrollIntoView'));
+console.log('Capture reuses its video element, retains scroll and keyboard focus, and samples the responsive target without scrolling to the guide.');
