@@ -38,6 +38,7 @@ jobs:
           node tests/scan-workspace.cjs
           node tests/scan-validation.cjs
           node tests/lesson-flow.cjs
+          node tests/hands-on-flow.cjs
           node tests/webgl-geometry.cjs
           node tests/color-recognition.cjs
           node tests/camera-session.cjs

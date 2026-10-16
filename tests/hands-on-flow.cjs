@@ -1,0 +1,23 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),Cube=require('../dist/vendor/cube.js');global.Cube=Cube;const B=require('../dist/planner.js');
+const memory=new Map();let renders=0,context;
+class Worker{terminate(){} postMessage({facelets,startStage}){this.onmessage({data:{type:'done',stages:B.plan(facelets,()=>{},startStage)}});}}
+context={Cube,Worker,localStorage:{getItem:k=>memory.get(k)||null,setItem:(k,v)=>memory.set(k,v)},valid:s=>Cube.fromString(s),location:{hash:'#learn'},route:'learn',render:()=>renders++,setTimeout:(f)=>{queueMicrotask(f);return 1;},clearTimeout:()=>{},busy:false,turn:async(c,m)=>c.move(m),heading:()=>'',NAMES:{U:'노랑',R:'주황',F:'초록',D:'흰색',L:'빨강',B:'파랑'},FACES:['U','R','F','D','L','B']};
+// Worker watchdog must use a real timer; demonstration delays can be immediate in this model-level regression.
+context.setTimeout=(f,ms)=>ms===45000?setTimeout(f,ms):(queueMicrotask(f),0);context.clearTimeout=clearTimeout;
+let source=fs.readFileSync(require('node:path').join(__dirname,'../dist/lesson-flow.js'),'utf8').replace('tests:{milestone,detect,read,segmentGoal,migrate}','tests:{milestone,detect,read,segmentGoal,migrate,act,undo,nextStage,restore,snapshot:()=>({state:JSON.parse(JSON.stringify(state)),cube:model.asString(),target:descriptor(),sequence:moves(),preview}),demo,stopDemo}');
+vm.createContext(context);vm.runInContext(source+'\nthis.Flow=LessonFlow;',context);const flow=context.Flow,T=flow.tests;
+(async()=>{
+flow.openExample(0);let a=T.snapshot();assert.equal(a.state.stage,0);assert.equal(a.target.piece,4);assert.equal(a.state.flowVersion,3);
+await T.act('R');const moved=T.snapshot().cube;assert.notEqual(moved,a.cube);T.restore();assert.equal(T.snapshot().cube,moved,'refresh retains actual practice');T.undo();assert.equal(T.snapshot().cube,a.cube,'undo retains the same target');
+await T.act('R2');a=T.snapshot();assert.equal(a.target.piece,5,'success automatically continues to next piece');assert.equal(a.state.current,new Cube().move("R U R' U' F U F' U' L' R2").asString(),'replan begins from actual learner result');
+let guard=0;while(!T.snapshot().state.stageReady){assert.ok(guard++<20);const sequence=[...T.snapshot().sequence];for(const m of sequence)await T.act(m);}
+a=T.snapshot();assert.equal(a.state.stage,0,'stage completion waits at the big goal');assert.ok(T.milestone(Cube.fromString(a.cube),0));const flower=a.cube;T.nextStage();a=T.snapshot();assert.equal(a.state.stage,1);assert.equal(a.cube,flower,'flower to cross keeps the physical cube');
+for(let i=0;i<4&&!T.snapshot().state.stageReady;i++){for(const m of [...T.snapshot().sequence])await T.act(m);}
+assert.ok(T.snapshot().state.stageReady);assert.ok(T.milestone(Cube.fromString(T.snapshot().cube),1));
+const cross=T.snapshot().cube;T.nextStage();assert.equal(T.snapshot().cube,cross);assert.equal(T.snapshot().state.stage,2);
+const beforeDemo=T.snapshot();await T.demo();assert.equal(T.snapshot().cube,beforeDemo.cube,'optional demo restores actual practice');assert.equal(T.snapshot().state.stage,beforeDemo.state.stage);const pending=T.demo();T.restore();await pending;assert.equal(T.snapshot().cube,beforeDemo.cube,'refresh during preview restores actual practice');
+for(let n=2;n<8;n++){let limit=0;while(!T.snapshot().state.stageReady){assert.ok(limit++<20,'stage '+n);const revision=T.snapshot().state.revision;for(const m of [...T.snapshot().sequence]){await T.act(m);if(T.snapshot().state.revision!==revision||T.snapshot().state.stageReady)break;}}assert.ok(T.milestone(Cube.fromString(T.snapshot().cube),n));if(n<7)T.nextStage();}
+const old={mode:'camera',current:flower,practice:cross,phase:4,stage:1};assert.equal(T.migrate(old).practice,cross);assert.equal(T.migrate({...old,phase:3}).practice,flower,'old preview never becomes actual practice');assert.equal(T.migrate({...old,phase:3,resumePractice:true}).practice,cross,'preview retains an already ongoing practice');const legacyPlan=B.plan(flower,()=>{},1),legacy=T.migrate({...old,plan:legacyPlan});assert.equal(legacy.current,flower,'keep the target baseline during legacy practice');assert.equal(legacy.plan,legacyPlan,'an unfinished move sequence keeps its lesson plan');
+const html=fs.readFileSync(require('node:path').join(__dirname,'../dist/lesson-flow.js'),'utf8');assert.ok(!html.includes('data-flow-answer'));assert.ok(!html.includes('flow-prep-next'));assert.ok(!html.includes('function phases'));
+console.log('PASS: direct practice, actual-state refresh, undo, automatic piece continuation, flower/cross boundaries, exact state continuity, migration, no mandatory micro-gates.');
+})().catch(e=>{console.error(e);process.exitCode=1;});
